@@ -7,7 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-
+import javax.sound.sampled.*;
 public class SampleVoice {
 
     private static final String serverURL = "http://vop.baidu.com/server_api";
@@ -17,11 +17,18 @@ public class SampleVoice {
     private static final String apiKey ="bd6kSzmqtlUaG1SEjbqR4R28";
     private static final String secretKey ="5eaad29500bcbd35c84bf6bfac5e9190";
     private static final String cuid ="6131442";
+    public static float SAMPLE_RATE = 8000f;
 
     public static void main(String[] args) throws Exception {
+
+
+
+
         String command="arecord -q -D plughw:1,0 -c1  -r 8000 --duration=3 -f S16_LE  test.wav";
         System.out.println("Start Recording.....");
-
+        System.out.println("Start");
+        tone(5000,100);
+        
         String output = executeCommand(command);
         System.out.println(output);
         System.out.println("Start Recongnize");
@@ -52,6 +59,35 @@ public class SampleVoice {
 
         return output.toString();
 
+    }
+    public static void tone(int hz, int msecs)
+            throws LineUnavailableException
+    {
+        tone(hz, msecs, 1.0);
+    }
+
+    public static void tone(int hz, int msecs, double vol)
+            throws LineUnavailableException
+    {
+        byte[] buf = new byte[1];
+        AudioFormat af =
+                new AudioFormat(
+                        SAMPLE_RATE, // sampleRate
+                        8,           // sampleSizeInBits
+                        1,           // channels
+                        true,        // signed
+                        false);      // bigEndian
+        SourceDataLine sdl = AudioSystem.getSourceDataLine(af);
+        sdl.open(af);
+        sdl.start();
+        for (int i=0; i < msecs*8; i++) {
+            double angle = i / (SAMPLE_RATE / hz) * 2.0 * Math.PI;
+            buf[0] = (byte)(Math.sin(angle) * 127.0 * vol);
+            sdl.write(buf,0,1);
+        }
+        sdl.drain();
+        sdl.stop();
+        sdl.close();
     }
 
     private static void getToken() throws Exception {

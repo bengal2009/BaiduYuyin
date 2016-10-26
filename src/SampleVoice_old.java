@@ -117,7 +117,7 @@ public class SampleVoice_old {
         wr.flush();
         wr.close();
 
-        printResponse(conn);
+        System.out.println(printResponse(conn));
     }
 
     private static void method2() throws Exception {
